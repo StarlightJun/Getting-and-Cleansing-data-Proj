@@ -19,6 +19,12 @@ Here are the data for the project:
 
 https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
 
+So, after downloading zip file from above site, unzip this file to current working directory and rearrange directory and file lists based on 3.1 Input below. And load run_analysis.R using script below and check the output file name "tinydata.txt" produced as the processing result.
+
+```
+source("run_analysis.R")
+```
+
 3. R script : Input, Output and the Processing script
 --------------------------------------------------
 This run_analysis.R assumes that the Samsung data is in current working directory.
@@ -45,7 +51,7 @@ Overall flow is as follows. And to understand overall data processing structure,
  * load 8 data sets into corresponding data frame. 
  
  ```
- Xtestdata <- read.csv("./test/X_test.txt", header=FALSE, sep="", stringsAsFactors=FALSE)
+Xtestdata <- read.csv("./test/X_test.txt", header=FALSE, sep="", stringsAsFactors=FALSE)
 ytest <- read.csv("./test/y_test.txt", header=FALSE, sep="", stringsAsFactors=FALSE)
 subjecttest <- read.csv("./test/subject_test.txt", header=FALSE, sep="", stringsAsFactors=FALSE)
 Xtraindata <- read.csv("./train/X_train.txt", header=FALSE, sep="", stringsAsFactors=FALSE)
@@ -63,26 +69,50 @@ allXdata <- rbind( Xtraindata,Xtestdata )
 
 #### 2. Extracts only the measurements on the mean and standard deviation for each measurement.
  * selectedXdata dataframe(10299 rows and 66 columns) which have the name of mean() and std() is extracted
+ > The signals were used to estimate variables of the feature vector for each pattern:  
+ > '-XYZ' is used to denote 3-axial signals in the X, Y and Z directions.
+ ```
+ Total 66 columns is selected with mean() for mean value and std() for standard deviation in order to get estimation on the set of variables below ( 3*8 + 9 = 33 for each mean(), std(), so total 66 columns are related )
  
-   ```
+ > tBodyAcc-XYZ       ; 3 measures for each X, Y, Z 
+ > tGravityAcc-XYZ    ; 3 measures for each X, Y, Z  
+ > tBodyAccJerk-XYZ   ; 3 measures for each X, Y, Z  
+ > tBodyGyro-XYZ      ; 3 measures for each X, Y, Z  
+ > tBodyGyroJerk-XYZ  ; 3 measures for each X, Y, Z  
+ > tBodyAccMag        ; 1 measure
+ > tGravityAccMag     ; 1 measure
+ > tBodyAccJerkMag    ; 1 measure
+ > tBodyGyroMag       ; 1 measure
+ > tBodyGyroJerkMag   ; 1 measure 
+ > fBodyAcc-XYZ       ; 3 measures for each X, Y, Z
+ > fBodyAccJerk-XYZ   ; 3 measures for each X, Y, Z
+ > fBodyGyro-XYZ      ; 3 measures for each X, Y, Z
+ > fBodyAccMag        ; 1 measure
+ > fBodyAccJerkMag    ; 1 measure
+ > fBodyGyroMag       ; 1 measure
+ > fBodyGyroJerkMag   ; 1 measure
+ ```
+
+ ```
 columnindex <- sort( c( grep("mean\\(\\)", features$V2, ignore.case = TRUE), grep("std\\(\\)", features$V2, ignore.case = TRUE) ) )
 selectedXdata <- allXdata[,columnindex]
-   ```
+ ```
    
  * and add corresponding initial columns' names matching features data frame into selectedXdata dataframe.
  
-   ```
+ ```
 names(selectedXdata) <- features$V2[columnindex] # add column names from features
-   ``` 
+ ``` 
    
 #### 3. Uses descriptive activity names to name the activities in the data set so finally add activity description column into selectedXdata dataframe making new data frame named alldata data frame(10299 rows and 67 columns).
+  * load plyr package and insert activity description for new data frame (alldata with 10299 rows and 67 columns) 
 
    ```
-library(plyr)
-allactivitylabels <- rbind( join(ytrain, activitylabels),
-                            join(ytest, activitylabels) 
-) 
-alldata <- cbind(activitydesc=allactivitylabels$V2, selectedXdata) # add activity description column 
+   library(plyr)
+   allactivitylabels <- rbind( join(ytrain, activitylabels),
+                               join(ytest, activitylabels) 
+                        ) 
+   alldata <- cbind(activitydesc=allactivitylabels$V2, selectedXdata) # add activity description column 
    ```
    
 #### 4. Appropriately labels the data set with descriptive variable names. 
